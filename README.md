@@ -1,13 +1,12 @@
-# Menu Xbox 360
+# KitXP 2
 
-### Sobre
 
-Este projeto foi desenvolvido com a finalidade de aprimorar minhas habilidades em HTML5 e CSS3. O layout possui apenas uma parte do menu de um Xbox 360.
+The second time of my website! All credits to MatheusBibiano's Xbox 360 Menu.
 
 <img src="assets/print.png"/>
 <br/>
 
-### 📌 Conteúdo
+### 📌 Content by MatheusBibiano
 
 * [Sobre](#sobre)
 * [Status](#status)
@@ -18,10 +17,6 @@ Este projeto foi desenvolvido com a finalidade de aprimorar minhas habilidades e
 * [Licença](#licença)
 <br/>
 
-### Status
-
-Projeto finalizado ✅
-<br/>
 
 ### Características
 
@@ -40,17 +35,9 @@ por meio do terminal ou cmd:
 2. O próximo passo é colar o caminho para o arquivo **index.html** na URL do navegador.
 <br/>
 
-### Tecnologias
+### Author
 
-A seguintes tecnologias foram utilizadas na construção do projeto:
-
-- [HTML5](https://developer.mozilla.org/docs/Web/HTML)
-- [CSS3](https://developer.mozilla.org/docs/Web/CSS)
-<br/>
-
-### Autor
-
-| Matheus Bibiano                                       |
+| Matheus Bibiano  and KitXP                                 |
 |-------------------------------------------------------|
 | <img src="assets/author.png" width="150" height="150">|
 | [<img src="https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" />](https://www.linkedin.com/in/matheus-bibiano-alves)|
