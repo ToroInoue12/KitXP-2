@@ -40,7 +40,8 @@ por meio do terminal ou cmd:
 | Matheus Bibiano  and KitXP                                 |
 |-------------------------------------------------------|
 | <img src="assets/author.png" width="150" height="150">|
-| [<img src="https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" />](https://www.linkedin.com/in/matheus-bibiano-alves)|
+| [<img src="https://img.shields.io/badge/linkedin-%230077B5.svg?&style=for-the-badge&logo=Matheus's Linkedin&logoColor=white" />](https://www.linkedin.com/in/matheus-bibiano-alves)|
+| <img src="assets/kitxp.jpg" width="150" height="150">|
 <br/>
 
 ### Licença
