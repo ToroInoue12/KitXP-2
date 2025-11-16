@@ -1,64 +1,480 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="./images/kitxp.jpg" />
+    <!-- Restored original external CSS links -->
     <link rel="stylesheet" href="./css/main.css" />
     <link rel="stylesheet" href="./css/action.css" />
     <title>KitXP 2</title>
-  </head>
 
-  <body>
+    <style>
+        /* Define colors based on the visual theme (dark background, emerald accent) */
+        :root {
+            --primary-bg: #1e1e1e;
+            --secondary-bg: #2d2d2d;
+            --modal-bg: #111111; /* Very dark/black for high contrast tile-like modal */
+            --accent-color: #10b981; /* Emerald 500 */
+            --text-color: #ffffff;
+            --sub-text-color: #ccc;
+        }
+
+        /* Modal Structure */
+        .search-modal-custom {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Modal Content Styling - Sharp, blocky, high contrast */
+        .search-modal-content-custom {
+            background-color: var(--modal-bg); /* Very dark, flat black */
+            border: 2px solid var(--accent-color); /* Strong green border */
+            padding: 2.5rem; /* Increase padding for a bolder box */
+            margin: 1rem;
+            border-radius: 0; /* Make it square/blocky */
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); /* Subtle green glow */
+            width: 95%; /* Wider modal */
+            max-width: 55rem;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .hidden { display: none; }
+        
+        /* Input Fields - High contrast, sharp corners */
+        .search-input-custom, .guestbook-input-custom {
+            width: 100%;
+            padding: 1rem; /* Slightly larger padding for better touch targets */
+            background-color: rgba(255, 255, 255, 0.05); /* Transparent black input */
+            border: 2px solid var(--accent-color);
+            border-radius: 0; /* Square corners */
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input-custom:focus, .guestbook-input-custom:focus {
+            border-color: #00ffaa; /* Brighter green on focus */
+            box-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
+        }
+
+        /* Buttons - Solid green block with 3D press effect */
+        .search-button-custom, .guestbook-button-custom {
+            padding: 0.75rem 2rem;
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            font-weight: 700;
+            border: none;
+            border-radius: 0; /* Square corners */
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px 0 #059669; /* 3D effect matching the tiles */
+            transform: translateY(0);
+        }
+        .search-button-custom:hover, .guestbook-button-custom:hover {
+            background-color: #059669;
+        }
+        .search-button-custom:active, .guestbook-button-custom:active {
+            box-shadow: 0 1px 0 #059669; /* Push button down effect */
+            transform: translateY(3px);
+        }
+
+        /* Modal Close Button */
+        .close-button-custom {
+            color: var(--sub-text-color); 
+            background: none; 
+            border: none; 
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-button-custom:hover {
+            color: var(--text-color);
+        }
+        
+        /* Guestbook specific styles for the list */
+        #guestbook-entries {
+            margin-top: 1rem;
+            max-height: 20rem;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+        
+        /* Individual Guestbook Entry - Looks like a smaller, high-contrast tile */
+        .guestbook-entry {
+            background-color: var(--primary-bg); /* Black background for message body */
+            padding: 1rem;
+            border-radius: 0;
+            margin-bottom: 0.75rem;
+            border-left: 6px solid var(--accent-color); /* Thicker accent bar */
+        }
+        .guestbook-entry strong {
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .guestbook-info {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.5rem;
+            display: block;
+        }
+        
+        /* Divider for Recent Entries */
+        .entries-divider {
+            border-top: 1px solid #444; 
+            padding-top: 1.5rem; 
+            margin-top: 2.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Search Modal/Overlay -->
+    <div id="search-modal" class="search-modal-custom hidden">
+        <div class="search-modal-content-custom" id="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: bold; color: white;">Global Search</h2>
+                <button onclick="hideSearchModal()" class="close-button-custom">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <form onsubmit="performSearch(event)">
+                <input type="text" id="search-input" placeholder="Enter your search term..." 
+                       class="search-input-custom" required>
+                
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="search-button-custom">
+                        Search Web
+                    </button>
+                </div>
+            </form>
+            <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--sub-text-color);">Search results will open in a new tab.</p>
+        </div>
+    </div>
+
+    <!-- Guestbook Modal/Overlay -->
+    <div id="guestbook-modal" class="search-modal-custom hidden">
+        <div class="search-modal-content-custom" id="guestbook-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: bold; color: white;">The Guestbook</h2>
+                <button onclick="hideGuestbookModal()" class="close-button-custom">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Guestbook Form -->
+            <form id="guestbook-form" onsubmit="postGuestbookEntry(event)">
+                <input type="text" id="guestbook-name" placeholder="Your Name/Alias" 
+                       class="guestbook-input-custom" required maxlength="50">
+                <textarea id="guestbook-message" placeholder="Leave a message for KitXPDev and other visitors..." 
+                          class="guestbook-input-custom" rows="3" required maxlength="300"></textarea>
+                
+                <div style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="guestbook-button-custom">
+                        Sign Guestbook
+                    </button>
+                </div>
+            </form>
+
+            <!-- Guestbook Entries List -->
+            <h3 style="font-size: 1.25rem; font-weight: bold; color: white;" class="entries-divider">Recent Entries</h3>
+            <div id="guestbook-entries">
+                <!-- Entries will be loaded here by JavaScript -->
+                <p style="color: #aaa;">Loading guestbook entries...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Original Header/Navigation Structure -->
     <header>
-      <div id="profile">
-        <img src="images/kitxp.jpg" id="user-photo" />
-        <h1 id="username">KitXPDev</h1>
-      </div>
-      <nav>
-        <ul id="menu">
-          <li>Search</li>
-          <li>Home</li>
-          <li>Socials</li>
-          <li>About Me</li>
-          <li>Projects</li>
-          <li>My Music</li>
-          <li>Guestbook</li>
-          <li>Settings</li>
-        </ul>
-      </nav>
+        <div id="profile">
+            <!-- Placeholder Image: Please replace this with your actual image file link. -->
+            <img src="https://placehold.co/64x64/10b981/ffffff?text=K" id="user-photo" onerror="this.src='https://placehold.co/64x64/10b981/ffffff?text=K'" style="border-radius: 50%; width: 4rem; height: 4rem; border: 2px solid #10b981;"/>
+            <h1 id="username">KitXPDev</h1>
+        </div>
+        <nav>
+            <ul id="menu">
+                <li onclick="showSearchModal()" style="cursor: pointer;">Search</li>
+                <li>Home</li>
+                <li>Socials</li>
+                <li>About Me</li>
+                <li>Projects</li>
+                <li>My Music</li>
+                <!-- Guestbook Button now triggers the modal -->
+                <li onclick="showGuestbookModal()" style="cursor: pointer;">Guestbook</li>
+                <li>Settings</li>
+            </ul>
+        </nav>
     </header>
 
+    <!-- Original Section Structure -->
     <section>
-      <div id="left-container">
-        <div class="square-left"><span>Play</span></div>
-        <div class="square-left"><span>My Pins</span></div>
-        <div class="square-left"><span>Recent</span></div>
-      </div>
+        <div id="left-container">
+            <div class="square-left"><span>Play</span></div>
+            <div class="square-left"><span>My Pins</span></div>
+            <div class="square-left"><span>Recent</span></div>
+        </div>
 
-      <div id="center-container">
-        <div class="master-square">
-          <span class="add-span">Games with Gold</span>
+        <div id="center-container">
+            <div class="master-square">
+                <span class="add-span">Games with Gold</span>
+            </div>
+            <div class="sub-center-container">
+                <div class="square-center">
+                    <span class="add-span">Tv & Movies Microsoft</span>
+                </div>
+                <div class="square-center">
+                    <span class="add-span">My apps</span>
+                </div>
+            </div>
         </div>
-        <div class="sub-center-container">
-          <div class="square-center">
-            <span class="add-span">Tv & Movies Microsoft</span>
-          </div>
-          <div class="square-center">
-            <span class="add-span">My apps</span>
-          </div>
-        </div>
-      </div>
 
-      <div id="right-container">
-        <div class="square-right">
-          <span class="add-span">Search</span>
+        <div id="right-container">
+            <!-- Search Square now triggers the modal -->
+            <div class="square-right" onclick="showSearchModal()" style="cursor: pointer;">
+                <span class="add-span">Search</span>
+            </div>
+            <div class="square-right">
+                <span class="add-span">Explore apps</span>
+            </div>
+            <div class="square-right"></div>
         </div>
-        <div class="square-right">
-          <span class="add-span">Explore apps</span>
-        </div>
-        <div class="square-right"></div>
-      </div>
     </section>
-  </body>
+
+    <!-- JavaScript for Functionality -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase and App variables
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        // --- Firebase Initialization and Authentication ---
+
+        // Mandatory Global Variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Log debug information for Firebase
+        setLogLevel('debug');
+
+        // Initialize Firebase
+        if (Object.keys(firebaseConfig).length > 0) {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // Handle authentication state
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    console.log("Firebase Auth Ready. User ID:", userId);
+                } else {
+                    try {
+                        // Sign in using custom token or anonymously if token is unavailable
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Firebase Auth Error:", error);
+                    }
+                }
+                isAuthReady = true;
+                // Once authenticated, start listening to Guestbook entries
+                if (db) listenForGuestbookEntries();
+            });
+        } else {
+            console.error("Firebase configuration is missing or invalid.");
+            isAuthReady = true;
+        }
+
+
+        // --- Guestbook Logic ---
+
+        const guestbookEntriesContainer = document.getElementById('guestbook-entries');
+
+        /**
+         * Real-time listener for Guestbook entries.
+         */
+        function listenForGuestbookEntries() {
+            if (!isAuthReady || !db) return;
+
+            // Use the public collection path for collaborative Guestbook data
+            const guestbookPath = `/artifacts/${appId}/public/data/guestbook_entries`;
+            const q = query(collection(db, guestbookPath), orderBy("timestamp", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                guestbookEntriesContainer.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    guestbookEntriesContainer.innerHTML = '<p style="color: #aaa;">Be the first to sign the guestbook!</p>';
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const entry = doc.data();
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'guestbook-entry';
+                    
+                    const time = entry.timestamp?.toDate ? entry.timestamp.toDate().toLocaleString() : 'Just now';
+
+                    entryDiv.innerHTML = `
+                        <strong>${entry.name}</strong>
+                        <p>${entry.message}</p>
+                        <span class="guestbook-info">Posted on ${time}</span>
+                    `;
+                    guestbookEntriesContainer.appendChild(entryDiv);
+                });
+            }, (error) => {
+                console.error("Error fetching guestbook entries: ", error);
+                guestbookEntriesContainer.innerHTML = '<p style="color: red;">Error loading entries. Check console for details.</p>';
+            });
+        }
+
+        /**
+         * Posts a new entry to the Guestbook collection.
+         */
+        window.postGuestbookEntry = async (event) => {
+            event.preventDefault();
+
+            if (!isAuthReady || !db) {
+                console.error("Database not ready.");
+                return;
+            }
+
+            const nameInput = document.getElementById('guestbook-name');
+            const messageInput = document.getElementById('guestbook-message');
+            
+            const name = nameInput.value.trim();
+            const message = messageInput.value.trim();
+
+            if (!name || !message) return;
+            
+            try {
+                const guestbookPath = `/artifacts/${appId}/public/data/guestbook_entries`;
+                await addDoc(collection(db, guestbookPath), {
+                    name: name,
+                    message: message,
+                    userId: userId, // Record the user ID who posted the message
+                    timestamp: new Date()
+                });
+
+                nameInput.value = '';
+                messageInput.value = '';
+                alertCustom('Thanks for signing the Guestbook!');
+
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                alertCustom('Failed to post entry. See console for error.', true);
+            }
+        }
+
+
+        // --- UI Modal Functions ---
+
+        // Custom alert function to avoid window.alert()
+        function alertCustom(message, isError = false) {
+            const existingAlert = document.getElementById('custom-alert');
+            if (existingAlert) existingAlert.remove();
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'custom-alert';
+            alertDiv.style.cssText = `
+                position: fixed; top: 1rem; right: 1rem; padding: 1rem 1.5rem; 
+                background-color: ${isError ? '#dc2626' : '#10b981'}; color: white; 
+                border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+                z-index: 100; transition: opacity 0.3s; opacity: 1;
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Search Modal Functions ---
+        const searchModal = document.getElementById('search-modal');
+        const searchModalContent = document.getElementById('modal-content');
+        const searchInput = document.getElementById('search-input');
+        
+        window.showSearchModal = function() {
+            searchModal.classList.remove('hidden');
+            void searchModal.offsetWidth; 
+            searchModal.style.opacity = '1';
+            searchModalContent.classList.remove('opacity-0');
+            searchModalContent.style.transform = 'scale(1)';
+            searchModalContent.style.opacity = '1';
+            searchInput.focus();
+        }
+
+        window.hideSearchModal = function() {
+            searchModal.style.opacity = '0';
+            searchModalContent.style.transform = 'scale(0.95)';
+            searchModalContent.style.opacity = '0';
+            setTimeout(() => {
+                searchModal.classList.add('hidden');
+            }, 300);
+        }
+
+        window.performSearch = function(event) {
+            event.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                window.open(searchUrl, '_blank');
+                hideSearchModal();
+                searchInput.value = '';
+            }
+        }
+        
+        // --- Guestbook Modal Functions ---
+        const guestbookModal = document.getElementById('guestbook-modal');
+        const guestbookModalContent = document.getElementById('guestbook-modal-content');
+        
+        window.showGuestbookModal = function() {
+            guestbookModal.classList.remove('hidden');
+            void guestbookModal.offsetWidth;
+            guestbookModal.style.opacity = '1';
+            guestbookModalContent.classList.remove('opacity-0');
+            guestbookModalContent.style.transform = 'scale(1)';
+            guestbookModalContent.style.opacity = '1';
+            document.getElementById('guestbook-name').focus();
+        }
+
+        window.hideGuestbookModal = function() {
+            guestbookModal.style.opacity = '0';
+            guestbookModalContent.style.transform = 'scale(0.95)';
+            guestbookModalContent.style.opacity = '0';
+            setTimeout(() => {
+                guestbookModal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
 </html>
